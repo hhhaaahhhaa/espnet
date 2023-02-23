@@ -103,7 +103,7 @@ def main(args):
                         results.append(line2result(line.strip()))
                     if "Corr" in line and "Sub" in line and "Del" in line:
                         anchored = True
-                except:
+                except Exception:
                     print("Oops! Should break earlier...")
                     break
         iso_results = {}
