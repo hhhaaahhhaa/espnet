@@ -110,7 +110,7 @@ def main(args):
         for res in results:
             try:
                 iso = res["name"].split("_")[-2]
-            except:
+            except Exception:
                 continue
             if iso not in iso_results:
                 iso_results[iso] = []
