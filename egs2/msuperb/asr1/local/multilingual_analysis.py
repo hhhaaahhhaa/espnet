@@ -2,6 +2,9 @@ import argparse
 import glob
 import json
 import os
+import re
+
+from sklearn.metrics import classification_report
 
 from linguistic_tree import LanguageTree
 
@@ -139,6 +142,44 @@ def main(args):
             f.write("\n\n")
             for k, v in errs.items():
                 f.write(f"{k}: {sum(v) / len(v):.2f}%\n")
+
+                # lid
+                with open(f"{root}/result.txt", 'r', encoding='utf-8') as f:
+                    text = f.read()
+                    lid_result_tmp_list = []
+                    pattern = r"^(REF|HYP|id):.*"
+                    matches = re.finditer(pattern, text, re.MULTILINE)
+                    for match in matches:
+                        match_sent = match.group(0)
+                        pattern = r"\[(.*?)\]"
+                        match = re.search(pattern, match_sent)
+                        if match:
+                            result = match.group(1)
+                            lid_result_tmp_list.append(result)
+                        else:
+                            lid_result_tmp_list.append(match_sent)
+
+                    y_true = []
+                    y_pred = []
+                    correct = 0
+                    total = 0
+                    for i in range(0, len(lid_result_tmp_list), 3):
+                        speaker_id, ref, hyp = lid_result_tmp_list[i:i + 3]
+                        if ref.upper() == hyp.upper():
+                            correct += 1
+                        total += 1
+                        y_true.append(ref.upper())
+                        y_pred.append(hyp.upper())
+                    lid_report = classification_report(y_true, y_pred)
+
+                    # write lid accuracy
+                    with open('lid_accuracy.txt', 'w') as f:
+                        print("accuracy", correct / total)
+                        f.write(str(correct / total))
+
+                    # write lid report to file
+                    with open('lid_report.txt', 'w') as f:
+                        f.write(lid_report)
 
 
 if __name__ == "__main__":
